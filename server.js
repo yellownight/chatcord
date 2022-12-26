@@ -38,12 +38,12 @@ db.serialize(function() {
 
 const botName = "ChatCord Bot";
 
-(async () => {
-  pubClient = createClient({ url: "redis://127.0.0.1:6379" });
-  await pubClient.connect();
-  subClient = pubClient.duplicate();
-  io.adapter(createAdapter(pubClient, subClient));
-})();
+// (async () => {
+//   pubClient = createClient({ url: "redis://127.0.0.1:6379" });
+//   await pubClient.connect();
+//   subClient = pubClient.duplicate();
+//   io.adapter(createAdapter(pubClient, subClient));
+// })();
 
 // Run when client connects
 io.on("connection", (socket) => {
