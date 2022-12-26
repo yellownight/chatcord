@@ -177,6 +177,7 @@ a {
 .join-main .btn {
 	margin-top: 20px;
 	width: 100%;
+	text-align: center;
 }
 
 @media (max-width: 700px) {

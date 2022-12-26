@@ -13,6 +13,7 @@ const {
   userLeave,
   getRoomUsers,
 } = require("./utils/users");
+const fs = require("fs");
 
 const app = express();
 const server = http.createServer(app);
@@ -20,6 +21,20 @@ const io = socketio(server);
 
 // Set static folder
 app.use(express.static(path.join(__dirname, "public")));
+
+const sqlite3 = require('sqlite3').verbose();
+const dbfile = "database.db";
+const existed = fs.existsSync(dbfile);
+const db = new sqlite3.Database(dbfile, sqlite3.OPEN_READWRITE, (err) => {
+  if(err) return console.error(err.message);
+  console.log("connection successful");
+});
+
+db.serialize(function() {
+  if (!existed) {
+    db.run("CREATE TABLE users (user_name TEXT, password TEXT)");
+  }
+});
 
 const botName = "ChatCord Bot";
 
@@ -32,7 +47,37 @@ const botName = "ChatCord Bot";
 
 // Run when client connects
 io.on("connection", (socket) => {
-  console.log(io.of("/").adapter);
+  socket.on('register', ({ username, password }) => {
+    const sql1 = `SELECT * FROM users WHERE user_name = '${username}' AND password = '${password}'`;
+
+    db.all(sql1, (err, rows) => {
+      if (rows.length) {
+        socket.emit('error', 'Register already!');
+      } else {
+        const sql = 'INSERT INTO users (user_name, password) VALUES (?, ?)';
+        db.run(sql, [username, password]);
+        // Welcome current user
+        socket.emit('register', 'Register successfully!');
+      }
+    })
+
+  });
+
+  socket.on('login', ({ username, password }) => {
+    // check username and password
+    const sql = `SELECT * FROM users WHERE user_name = '${username}' AND password = '${password}'`;
+
+    // username and password does not exist
+    db.all(sql, (err, rows) => {
+      if (rows.length) {
+        const user = userJoin(socket.id, username, 'chatroom');
+        socket.emit('success', user);
+      } else {
+        socket.emit('error', 'Incorrect Name or Password!');
+      }
+    })
+
+  });
   socket.on("joinRoom", ({ username, room }) => {
     const user = userJoin(socket.id, username, room);
 

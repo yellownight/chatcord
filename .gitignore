@@ -1,3 +1,7 @@
 node_modules/
 .DS_Store
 .env
+/.idea/
+/node_modules/
+/package-lock.json
+/yarn.lock
