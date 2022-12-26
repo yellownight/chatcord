@@ -33,6 +33,7 @@ const db = new sqlite3.Database(dbfile, sqlite3.OPEN_READWRITE, (err) => {
 db.serialize(function() {
   if (!existed) {
     db.run("CREATE TABLE users (user_name TEXT, password TEXT)");
+    db.run("CREATE TABLE message (username TEXT, time TEXT,text TEXT)");
   }
 });
 
@@ -104,7 +105,8 @@ io.on("connection", (socket) => {
   // Listen for chatMessage
   socket.on("chatMessage", (msg) => {
     const user = getCurrentUser(socket.id);
-
+    const sql = 'INSERT INTO message (message, current_time) VALUES (?, ?)';
+    db.run(sql, [msg, new Date().getTime()]);
     io.to(user.room).emit("message", formatMessage(user.username, msg));
   });
 
